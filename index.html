@@ -227,8 +227,11 @@
         const response = await fetch('medical_colleges_data.json');
         collegeData = await response.json();
 
-        populateDropdown('category', [...new Set(collegeData.map(c => c["Allotted Category"]))]);
-        populateDropdown('course', [...new Set(collegeData.map(c => c["Course Name"]))]);
+        const uniqueCategories = [...new Set(collegeData.map(c => c["Allotted Category"]))];
+        const uniqueCourses = [...new Set(collegeData.map(c => c["Course Name"]))];
+
+        populateDropdown('category', uniqueCategories);
+        populateDropdown('course', uniqueCourses);
       } catch (e) {
         alert("Failed to load JSON data.");
       }
@@ -236,10 +239,11 @@
 
     function populateDropdown(id, options) {
       const select = document.getElementById(id);
-      options.sort().forEach(option => {
+      options = Array.from(new Set(options)).sort();
+      options.forEach(option => {
         const opt = document.createElement("option");
         opt.value = option;
-        opt.text = option;
+        opt.text = id === 'course' ? option.toUpperCase() : option;
         select.appendChild(opt);
       });
     }
@@ -257,10 +261,10 @@
         return;
       }
 
-      let filtered = collegeData.filter(college => {
-        const eligibleRank = rank <= college["All India Rank"];
+      const filtered = collegeData.filter(college => {
+        const eligibleRank = rank <= Number(college["All India Rank"]);
         const matchCategory = category ? college["Allotted Category"] === category : true;
-        const matchCourse = course ? college["Course Name"] === course : true;
+        const matchCourse = course ? college["Course Name"].toUpperCase() === course : true;
 
         let matchFees = true;
         const courseFees = parseInt(college["Course_fees"]);
@@ -283,9 +287,9 @@
             <td>${index + 1}</td>
             <td>${college["Name of the College Allotted."]}</td>
             <td>${college["Allotted Category"]}</td>
-            <td>${college["Course Name"]}</td>
+            <td>${college["Course Name"].toUpperCase()}</td>
             <td>${college["All India Rank"]}</td>
-            <td>${college["Course_fees"] || "N/A"}</td>
+            <td>₹${college["Course_fees"] ? college["Course_fees"].toLocaleString() : "N/A"}</td>
           </tr>
         `).join('');
         resultsBody.innerHTML = rows;
