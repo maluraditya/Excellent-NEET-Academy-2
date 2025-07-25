@@ -242,8 +242,13 @@
       options = Array.from(new Set(options)).sort();
       options.forEach(option => {
         const opt = document.createElement("option");
-        opt.value = option;
-        opt.text = id === 'course' ? option.toUpperCase() : option;
+        if (id === 'course') {
+          opt.value = option.toUpperCase(); // fixed: match filter comparison
+          opt.text = option.toUpperCase();
+        } else {
+          opt.value = option;
+          opt.text = option;
+        }
         select.appendChild(opt);
       });
     }
@@ -264,7 +269,7 @@
       const filtered = collegeData.filter(college => {
         const eligibleRank = rank <= Number(college["All India Rank"]);
         const matchCategory = category ? college["Allotted Category"] === category : true;
-        const matchCourse = course ? college["Course Name"].toUpperCase() === course : true;
+        const matchCourse = course ? college["Course Name"].toUpperCase().trim() === course.trim() : true;
 
         let matchFees = true;
         const courseFees = parseInt(college["Course_fees"]);
